@@ -1,21 +1,28 @@
-# Nandゲートを最小素子として、各論理ゲートをつくる
-Nand
+# Nandゲートを最小素子として、各論理回路をつくる
 
-$f(a, b) = \overline{a}\overline{b} + \overline{a}b + a\overline{b}$
+### Nand
+実装は知らなくてよい
 
-Not
+| a | b | out |
+|-|-|-|
+| 0 | 0 | 1 |
+| 0 | 1 | 1 |
+| 1 | 0 | 1 |
+| 1 | 1 | 0 |
+---
+### Not
 
-if in=0 then out=1 else out=0
+$f(in) = Nand(in, in)$
 
-And
+### And
 
 if a=b then out=1 else out=0
 
-Or
+### Or
 
 if a=b=0 then out=0 else out=1
 
-Xor
+### Xor
 
 if a<>b then out=1 else out=0
 
