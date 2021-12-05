@@ -10,9 +10,10 @@
 | 1 | 0 | 1 |
 | 1 | 1 | 0 |
 ---
+NandでNot, And, Or, Xorを実装する
 ### Not
 
-$f(in) = Nand(in, in)$
+Not = Nand(in, in)
 
 ### And
 

@@ -1,0 +1,92 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/02/ALU.hdl
+
+/**
+ * The ALU (Arithmetic Logic Unit).
+ * Computes one of the following functions:
+ * x+y, x-y, y-x, 0, 1, -1, x, y, -x, -y, !x, !y,
+ * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs, 
+ * according to 6 input bits denoted zx,nx,zy,ny,f,no.
+ * In addition, the ALU computes two 1-bit outputs:
+ * if the ALU output == 0, zr is set to 1; otherwise zr is set to 0;
+ * if the ALU output < 0, ng is set to 1; otherwise ng is set to 0.
+ */
+
+// Implementation: the ALU logic manipulates the x and y inputs
+// and operates on the resulting values, as follows:
+// if (zx == 1) set x = 0        // 16-bit constant
+// if (nx == 1) set x = !x       // bitwise not
+// if (zy == 1) set y = 0        // 16-bit constant
+// if (ny == 1) set y = !y       // bitwise not
+// if (f == 1)  set out = x + y  // integer 2's complement addition
+// if (f == 0)  set out = x & y  // bitwise and
+// if (no == 1) set out = !out   // bitwise not
+// if (out == 0) set zr = 1
+// if (out < 0) set ng = 1
+
+CHIP ALU {
+    IN  
+        x[16], y[16],  // 16-bit inputs        
+        zx, // zero the x input?
+        nx, // negate the x input?
+        zy, // zero the y input?
+        ny, // negate the y input?
+        f,  // compute out = x + y (if 1) or x & y (if 0)
+        no; // negate the out output?
+
+    OUT 
+        out[16], // 16-bit output
+        zr, // 1 if (out == 0), 0 otherwise
+        ng; // 1 if (out < 0),  0 otherwise
+    
+    PARTS:
+   // Put you code here:
+
+        // 1, 2の回路（フィルター）を通してx[16]のビット列を確定させる
+        // 3, 4の回路（フィルター）を通してy[16]のビット列を確定させる
+        // x---[zx]-[nx] --- xout---|\[f]___fout___[no]___out
+        // y---[zy]-[ny] --- yout---|/
+
+        // x[16]
+        // 1. zx制御ビット: 0のとき、そのままx[16]を出力
+        //                1のとき、16ビットを[すべて0]を出力
+        Mux16(a=x, b[0..15]=false, sel=zx, out=zxout);
+        // 2. nx制御ビット: 0のとき、そのままx[16]を出力
+        //                1のとき、16[ビット列を反転]して出力
+        Not16(in=zxout, out=notzx);
+        Mux16(a=zxout, b=notzx, sel=nx, out=xout);
+
+
+        // y[16]
+        // 3. zy制御ビット: 0のとき、そのままy[16]を出力
+        //                1のとき、16ビットを[すべて0]を出力
+        And16(a=y, b[0..15]=false, out=zeroy);
+        Mux16(a=y, b=zeroy, sel=zy, out=zyout);
+        // 4. nx制御ビット: 0のとき、そのままx[16]を出力
+        //                1のとき、16[ビット列を反転]して出力
+        Not16(in=zyout, out=notzy);
+        Mux16(a=zyout, b=notzy, sel=ny, out=yout);
+
+        // 5. f制御ビット: 0のとき、x & y を出力
+        //               1のとき、x + y （加算） を出力
+        And16(a=xout, b=yout, out=andxy);
+        Add16(a=xout, b=yout, out=addxy);
+        Mux16(a=andxy, b=addxy, sel=f, out=fout);
+
+        // 6. no=0のときそのまま歳出出力、no=1のとき反転して最終出力
+        //    最終出力outのを2つに分割して出力
+        // マイナスの場合、最上位ビットが1である性質を利用して、ngに出力
+        Not16(in=fout, out=notfout);
+        Mux16 (a=fout, b=notfout, sel=no, out=out, out[0..7]=leastout, out[8..15]=mostout, out[15]=ng);
+
+        // 7. 最終出力にがすべて0かどうか判別
+        // 両方0なら1を出力, Or8Wayは1個でも1があれば1を出力
+        Or8Way(in=leastout, out=existoneleast);
+        Or8Way(in=mostout, out=existonemost);
+        // Norを実装する 0,0のときだけ1をかえす
+        Or(a=existoneleast, b=existonemost, out=existoneall);
+        Not(in=existoneall, out=zr);
+
+}
