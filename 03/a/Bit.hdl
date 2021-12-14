@@ -1,0 +1,34 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/03/a/Bit.hdl
+
+/**
+ * 1-bit register:
+ * If load[t] == 1 then out[t+1] = in[t]
+ *                 else out does not change (out[t+1] = out[t])
+ */
+
+// レジeスタとはそもそも何か
+CHIP Bit {
+    IN in, load;
+    OUT out;
+
+    PARTS:
+    // Put your code here:
+
+    // ee
+
+    // 1. [データの読eみ出し]
+    // 一つ前のloadビット（t-1）が0のとき（readのとき）
+    // 一つ前ではDFFにin(t-1)が保存されていないので
+    // 一つ前のDFFのout（=out(t-1)）を出力する
+
+    // ２. [データの読eみ出し]
+    // 一つ前のloadビット（t-1）が1のとき（writeのとき）
+    // 一つ前ではDFFにin(t-1)が保存されている
+    // 一つ前のDFFのout（in(t-1)）を出力する
+
+    Mux (a=preout, b=in, sel=load, out=muxout);
+    DFF (in=muxout, out=preout, out=out);
+}
