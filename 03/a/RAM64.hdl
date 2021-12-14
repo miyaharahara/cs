@@ -1,0 +1,34 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/03/a/RAM64.hdl
+
+/**
+ * Memory of 64 registers, each 16 bit-wide. Out holds the value
+ * stored at the memory location specified by address. If load==1, then 
+ * the in value is loaded into the memory location specified by address 
+ * (the loaded value will be emitted to out from the next time step onward).
+ */
+
+CHIP RAM64 {
+    IN in[16], load, address[6];
+    OUT out[16];
+
+    PARTS:
+    // Put your code here:
+    // 1. 8個並んだa~hどのRAM8に入力するか0~2ビットで選択2^3=8択 address[yyyxxx], [5][4][3][2][1][0], xxx
+    DMux8Way(in=load, sel=address[0..2], a=ra, b=rb, c=rc, d=rd, e=re, f=rf, g=rg, h=rh);
+
+    // 2. 選択されたRAM8のどのレジスタに入力するかを3~5ビットで選択2^3=8択, yyy
+    RAM8(in=in, load=ra, address=address[3..5], out=raout);
+    RAM8(in=in, load=rb, address=address[3..5], out=rbout);
+    RAM8(in=in, load=rc, address=address[3..5], out=rcout);
+    RAM8(in=in, load=rd, address=address[3..5], out=rdout);
+    RAM8(in=in, load=re, address=address[3..5], out=reout);
+    RAM8(in=in, load=rf, address=address[3..5], out=rfout);
+    RAM8(in=in, load=rg, address=address[3..5], out=rgout);
+    RAM8(in=in, load=rh, address=address[3..5], out=rhout);
+
+    // 3. どのRAM8から出てくるかは1.の時点で確定しているので xxxビットで選択
+    Mux8Way16(a=raout, b=rbout, c=rcout, d=rdout, e=reout, f=rfout, g=rgout, h=rhout, sel=address[0..2], out=out);
+}
